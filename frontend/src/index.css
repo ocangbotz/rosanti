@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Design tokens — validated dataviz palette (dark-first fintech theme).
+  Values are space-separated RGB triplets (not hex) so Tailwind's opacity
+  modifiers work: theme colors are wired up as `rgb(var(--x) / <alpha-value>)`
+  in tailwind.config.js, letting classes like `bg-bull/15` resolve correctly.
+  Dark is the default look (no data-theme attribute needed); a light
+  variant is available via [data-theme="light"] for the settings toggle.
+  Status colors are fixed/non-themed by design (identical in both modes).
+*/
+:root {
+  color-scheme: dark;
+
+  --color-surface-page: 13 13 13;
+  --color-surface-card: 23 23 26;
+  --color-surface-raised: 33 33 36;
+  --color-ink-primary: 255 255 255;
+  --color-ink-secondary: 195 194 183;
+  --color-ink-muted: 137 135 129;
+  --color-border: 255 255 255;
+  --color-border-alpha: 0.1;
+  --color-gridline: 44 44 42;
+  --color-baseline: 56 56 53;
+
+  --color-accent: 57 135 229;
+  --color-accent-hover: 90 160 236;
+
+  --color-status-good: 12 163 12;
+  --color-status-warning: 250 178 25;
+  --color-status-serious: 236 131 90;
+  --color-status-critical: 208 59 59;
+
+  --color-bull: 12 163 12;
+  --color-bear: 230 103 103;
+  --color-delta-good: 12 163 12;
+  --color-delta-bad: 230 103 103;
+
+  --color-series-1: 57 135 229;
+  --color-series-2: 217 89 38;
+  --color-series-3: 25 158 112;
+  --color-series-4: 201 133 0;
+  --color-series-5: 213 81 129;
+  --color-series-6: 0 131 0;
+  --color-series-7: 144 133 233;
+  --color-series-8: 230 103 103;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-surface-page: 249 249 247;
+  --color-surface-card: 252 252 251;
+  --color-surface-raised: 242 241 238;
+  --color-ink-primary: 11 11 11;
+  --color-ink-secondary: 82 81 78;
+  --color-ink-muted: 137 135 129;
+  --color-border: 11 11 11;
+  --color-border-alpha: 0.1;
+  --color-gridline: 225 224 217;
+  --color-baseline: 195 194 183;
+
+  --color-accent: 42 120 214;
+  --color-accent-hover: 28 92 171;
+
+  --color-status-good: 12 163 12;
+  --color-status-warning: 250 178 25;
+  --color-status-serious: 236 131 90;
+  --color-status-critical: 208 59 59;
+
+  --color-bull: 12 163 12;
+  --color-bear: 208 59 59;
+  --color-delta-good: 0 99 0;
+  --color-delta-bad: 208 59 59;
+
+  --color-series-1: 42 120 214;
+  --color-series-2: 235 104 52;
+  --color-series-3: 27 175 122;
+  --color-series-4: 237 161 0;
+  --color-series-5: 232 123 164;
+  --color-series-6: 0 131 0;
+  --color-series-7: 74 58 167;
+  --color-series-8: 227 73 72;
+}
+
+* {
+  border-color: rgb(var(--color-border) / var(--color-border-alpha));
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: rgb(var(--color-surface-page));
+  color: rgb(var(--color-ink-primary));
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-surface-raised));
+  border-radius: 999px;
+}
