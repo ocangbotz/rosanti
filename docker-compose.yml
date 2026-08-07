@@ -1,0 +1,57 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    image: fathir-backend:latest
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override whatever DATABASE_URL is in .env so the container always
+      # writes into the named volume below, not a path that only exists on
+      # the host. Point this at Postgres instead (see the optional `db`
+      # service) to upgrade off SQLite — no code changes required.
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./data/fathir.db}
+    volumes:
+      - backend_data:/app/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./frontend
+    image: fathir-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Optional Postgres upgrade path — disabled by default. Enable with:
+  #   docker compose --profile postgres up
+  # and set DATABASE_URL=postgresql+psycopg2://fathir:fathir@db:5432/fathir
+  # in backend/.env (uncomment psycopg2-binary in backend/requirements.txt
+  # first). No application code changes are needed either way.
+  db:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: fathir
+      POSTGRES_PASSWORD: fathir
+      POSTGRES_DB: fathir
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  backend_data:
+  postgres_data:
