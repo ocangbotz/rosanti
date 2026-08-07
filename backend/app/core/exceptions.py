@@ -63,3 +63,8 @@ class ValidationFailedError(FathirError):
 class TelegramDeliveryError(FathirError):
     status_code = 502
     default_message = "Failed to deliver a Telegram notification."
+
+
+class NewsFeedError(FathirError):
+    status_code = 502
+    default_message = "Failed to fetch or parse the economic calendar feed."

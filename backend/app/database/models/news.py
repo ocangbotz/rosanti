@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from sqlalchemy import DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -18,7 +20,7 @@ class NewsEvent(IdMixin, TimestampMixin, Base):
     impact: Mapped[NewsImpact] = mapped_column(
         Enum(NewsImpact, native_enum=False, length=8), nullable=False, index=True
     )
-    event_time: Mapped[DateTime] = mapped_column(
+    event_time: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
     )
     forecast: Mapped[str | None] = mapped_column(String(64), nullable=True)

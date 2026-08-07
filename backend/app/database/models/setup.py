@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import enum
+from datetime import datetime
 
 from sqlalchemy import JSON, DateTime, Enum, Float, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -54,7 +55,7 @@ class TradeSetup(IdMixin, TimestampMixin, Base):
         default=SetupStatus.PROPOSED,
         nullable=False,
     )
-    expires_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self) -> str:  # pragma: no cover - debug helper
         return (

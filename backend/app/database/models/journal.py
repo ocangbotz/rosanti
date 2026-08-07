@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from sqlalchemy import JSON, DateTime, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -46,8 +48,8 @@ class JournalEntry(IdMixin, TimestampMixin, Base):
         nullable=False,
     )
 
-    opened_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
-    closed_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     ai_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     trader_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
