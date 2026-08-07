@@ -70,3 +70,13 @@ class DailyLimitCheckResponse(BaseModel):
     daily_pnl_percent: float
     max_daily_loss_percent: float
     reasons: list[str]
+
+
+class DrawdownInfo(BaseModel):
+    peak_equity: float
+    trough_equity: float
+    current_equity: float
+    current_drawdown_percent: float
+    max_drawdown_observed_percent: float
+    max_drawdown_limit_percent: float
+    limit_breached: bool
