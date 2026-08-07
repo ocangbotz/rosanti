@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from app.core.constants import Timeframe, TradeDirection
 from app.database.models.setup import SetupStatus
-from app.schemas.common import TimestampedSchema
+from app.schemas.common import ORMBase, TimestampedSchema
 
 
 class Reason(BaseModel):
@@ -43,7 +43,7 @@ class TradeSetupRead(TimestampedSchema):
     expires_at: datetime | None = None
 
 
-class TradeSetupSummary(BaseModel):
+class TradeSetupSummary(ORMBase):
     """Lightweight shape for list views (dashboard cards, Telegram alerts)."""
 
     id: int

@@ -1,4 +1,5 @@
-"""Shared FastAPI dependencies: DB session, API key auth."""
+"""Shared FastAPI dependencies: DB session, API key auth, and thin factories
+over the service-layer singletons (broker gateway, AI provider, Telegram)."""
 
 from __future__ import annotations
 
@@ -9,6 +10,11 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.database.session import get_db as _get_db
+from app.services.ai.factory import get_llm_provider
+from app.services.ai.narrator import MarketNarrator
+from app.services.broker.factory import get_broker_gateway
+from app.services.market_data import MarketDataService
+from app.services.telegram.notifier import TelegramNotifier
 
 get_db = _get_db
 
@@ -43,3 +49,15 @@ DbDep = Depends(get_db)
 
 def db_session() -> Generator[Session, None, None]:
     yield from _get_db()
+
+
+def get_market_data_service(settings: Settings = Depends(get_app_settings)) -> MarketDataService:
+    return MarketDataService(get_broker_gateway())
+
+
+def get_ai_narrator(settings: Settings = Depends(get_app_settings)) -> MarketNarrator:
+    return MarketNarrator(get_llm_provider(settings))
+
+
+def get_telegram_notifier(settings: Settings = Depends(get_app_settings)) -> TelegramNotifier:
+    return TelegramNotifier(settings)

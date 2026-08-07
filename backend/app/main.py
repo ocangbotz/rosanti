@@ -16,11 +16,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app import __version__
+from app.api.routers import account, analysis, journal, market, news, risk, screenshot, setups, ws
+from app.api.routers import settings as settings_router
+from app.api.routers import telegram as telegram_router
 from app.config import get_settings
 from app.core.exceptions import FathirError
 from app.core.logging_config import configure_logging, get_logger, request_id_ctx
 from app.database.base import Base
 from app.database.session import engine
+from app.services.scheduler import TradingScheduler
+from app.services.telegram.bot import build_application
 
 settings = get_settings()
 configure_logging(settings.log_level)
@@ -35,7 +40,31 @@ async def lifespan(app: FastAPI):
         Base.metadata.create_all(bind=engine)
         logger.info("SQLite schema ensured at startup.")
     logger.info("%s v%s starting in %s mode.", settings.app_name, __version__, settings.environment)
+
+    scheduler = TradingScheduler(settings)
+    scheduler.start()
+
+    telegram_application = None
+    if settings.telegram_enabled and settings.telegram_bot_token:
+        try:
+            telegram_application = build_application(settings)
+            assert telegram_application.updater is not None  # always set by ApplicationBuilder
+            await telegram_application.initialize()
+            await telegram_application.start()
+            await telegram_application.updater.start_polling()
+            logger.info("Telegram bot polling started.")
+        except FathirError as exc:
+            logger.warning("Telegram bot not started: %s", exc.message)
+            telegram_application = None
+
     yield
+
+    if telegram_application is not None:
+        assert telegram_application.updater is not None
+        await telegram_application.updater.stop()
+        await telegram_application.stop()
+        await telegram_application.shutdown()
+    scheduler.shutdown()
     logger.info("%s shutting down.", settings.app_name)
 
 
@@ -75,6 +104,21 @@ async def add_request_id(request: Request, call_next):
 async def fathir_error_handler(request: Request, exc: FathirError) -> JSONResponse:
     logger.warning("Handled error on %s %s: %s", request.method, request.url.path, exc.message)
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
+
+
+API_PREFIX = "/api/v1"
+
+app.include_router(account.router, prefix=API_PREFIX)
+app.include_router(market.router, prefix=API_PREFIX)
+app.include_router(analysis.router, prefix=API_PREFIX)
+app.include_router(setups.router, prefix=API_PREFIX)
+app.include_router(risk.router, prefix=API_PREFIX)
+app.include_router(journal.router, prefix=API_PREFIX)
+app.include_router(news.router, prefix=API_PREFIX)
+app.include_router(telegram_router.router, prefix=API_PREFIX)
+app.include_router(screenshot.router, prefix=API_PREFIX)
+app.include_router(settings_router.router, prefix=API_PREFIX)
+app.include_router(ws.router)  # WebSocket route, no versioned prefix or API-key gate
 
 
 @app.get("/health", tags=["system"])

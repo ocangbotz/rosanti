@@ -42,6 +42,12 @@ class TelegramNotifier:
             bot = Bot(token=settings.telegram_bot_token)
         self._bot = bot
 
+    async def send_direct_message(self, chat_id: str, text: str) -> None:
+        """Send to a single chat_id directly, bypassing subscriber
+        preferences — used for one-off sends like the "send test message"
+        dashboard action."""
+        await self._bot.send_message(chat_id=chat_id, text=text, parse_mode=ParseMode.MARKDOWN)
+
     async def _broadcast(self, db, message: str, preference_field: str) -> BroadcastResult:
         subscribers = list_subscribers_for(db, preference_field)
         sent: list[str] = []
