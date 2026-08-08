@@ -75,17 +75,40 @@ export function CandlestickChart({ candles, priceLines = [], markers = [], heigh
     chartRef.current = chart;
     seriesRef.current = series;
 
+    // The browser can have already queued a ResizeObserver notification by
+    // the time cleanup runs `disconnect()` below — `disconnect()` only
+    // stops *future* notifications, not one already in flight. Without this
+    // flag, that queued callback fires `chart.applyOptions()` on an
+    // already-`remove()`d chart, which throws "Object is disposed" from
+    // inside lightweight-charts' internal repaint (verified against a real
+    // browser: rapid unmount right after mount reproduces it every time).
+    let disposed = false;
     const resizeObserver = new ResizeObserver((entries) => {
+      if (disposed) return;
       const entry = entries[0];
       if (entry) chart.applyOptions({ width: entry.contentRect.width });
     });
     resizeObserver.observe(containerRef.current);
 
     return () => {
+      disposed = true;
       resizeObserver.disconnect();
-      chart.remove();
+      // lightweight-charts sets up its OWN internal resize/DPI observer on
+      // the container (separate from ours above) to track canvas pixel
+      // density. That internal observer can already have a notification
+      // queued by the browser at the moment we unmount; disposing
+      // synchronously here tears the chart down mid-flight and its queued
+      // callback then throws "Object is disposed" from inside the
+      // library's repaint. Deferring disposal by one animation frame lets
+      // any already-queued internal repaint finish against a still-valid
+      // chart first (confirmed against a real browser: without this defer,
+      // navigating away from the Market page within ~1s of it mounting
+      // reproduced the error on every run).
       chartRef.current = null;
       seriesRef.current = null;
+      requestAnimationFrame(() => {
+        chart.remove();
+      });
     };
   }, [height]);
 
@@ -121,7 +144,18 @@ export function CandlestickChart({ candles, priceLines = [], markers = [], heigh
     );
 
     return () => {
-      created.forEach((priceLine) => series.removePriceLine(priceLine));
+      // On full unmount, this cleanup can run after the chart-creation
+      // effect's cleanup already called `chart.remove()`, leaving `series`
+      // disposed — removePriceLine on it throws. There's nothing left to
+      // clean up in that case (the whole chart is gone), so it's safe to
+      // ignore.
+      created.forEach((priceLine) => {
+        try {
+          series.removePriceLine(priceLine);
+        } catch {
+          // Series already disposed by the chart-creation effect's cleanup.
+        }
+      });
     };
   }, [priceLines]);
 
