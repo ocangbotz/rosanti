@@ -32,6 +32,13 @@ Apply the database schema:
 alembic upgrade head
 ```
 
+No separate seed step is needed — there's deliberately no seed script.
+Rows that would normally be "seeded" (global risk settings, per-account
+settings) are instead created lazily on first access, populated from the
+`DEFAULT_*` values in `.env` (see `app/risk/limits.py::get_risk_settings`).
+Everything else (broker accounts, journal entries, trade setups, Telegram
+subscribers) is meant to start empty and fill in through normal use.
+
 Run the API:
 
 ```bash
