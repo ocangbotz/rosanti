@@ -5,12 +5,11 @@ services:
     image: fathir-backend:latest
     env_file:
       - ./backend/.env
-    environment:
-      # Override whatever DATABASE_URL is in .env so the container always
-      # writes into the named volume below, not a path that only exists on
-      # the host. Point this at Postgres instead (see the optional `db`
-      # service) to upgrade off SQLite — no code changes required.
-      DATABASE_URL: ${DATABASE_URL:-sqlite:///./data/fathir.db}
+    # DATABASE_URL comes entirely from backend/.env (default: SQLite under
+    # the mounted volume below). To upgrade to Postgres, set DATABASE_URL in
+    # backend/.env — see "Upgrading to Postgres" in docs/SETUP.md. Do NOT
+    # add an `environment:` override here: it takes precedence over
+    # `env_file` for the same key and would silently defeat that switch.
     volumes:
       - backend_data:/app/data
     ports:
