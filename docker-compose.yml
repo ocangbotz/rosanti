@@ -38,6 +38,11 @@ services:
   # and set DATABASE_URL=postgresql+psycopg2://fathir:fathir@db:5432/fathir
   # in backend/.env (uncomment psycopg2-binary in backend/requirements.txt
   # first). No application code changes are needed either way.
+  #
+  # SECURITY: POSTGRES_USER/POSTGRES_PASSWORD below are a local-dev-only
+  # default (matching the DATABASE_URL above) and this port is published to
+  # the host. Change both — and the matching DATABASE_URL in backend/.env —
+  # before running this anywhere reachable beyond your own machine.
   db:
     image: postgres:16-alpine
     profiles: ["postgres"]
