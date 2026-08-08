@@ -114,8 +114,14 @@ docstring there for the trade-off. On a transient error the socket receives
 
 ## Error shape
 
-Every handled error returns `{"detail": "<message>"}` with an appropriate
-status code (`app/main.py`'s `FathirError` handler). See
-`app/core/exceptions.py` for the full exception hierarchy and their status
-codes (e.g. `InsufficientDataError` → 422, `BrokerUnavailableError` → 503,
-`AIProviderError` → 502, `NotFoundError` → 404).
+Every domain-level error (raised as a `FathirError` subclass) returns
+`{"detail": "<message>"}` with an appropriate status code (`app/main.py`'s
+`FathirError` handler). See `app/core/exceptions.py` for the full exception
+hierarchy and their status codes (e.g. `InsufficientDataError` → 422,
+`BrokerUnavailableError` → 503, `AIProviderError` → 502, `NotFoundError` →
+404).
+
+Request validation errors (malformed query params/body, caught by FastAPI
+before a route body runs) instead return FastAPI/Pydantic's own shape —
+`{"detail": [{"type": ..., "loc": [...], "msg": ...}, ...]}`, an array —
+with status `422`.
